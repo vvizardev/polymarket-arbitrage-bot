@@ -11,9 +11,11 @@ A TypeScript trading bot for Polymarket cryptocurrency prediction markets.
 
 ---
 
-### Contact to Developer
+### From Developer
 
-For support and further inquiries, please connect via Telegram: 📞 [vvizardev](https://t.me/vvizardev)
+Please note that Polymarket has regional restrictions. 
+
+If you need support or have any questions, feel free to reach out via Telegram: 📞 [vvizardev](https://t.me/vvizardev)
 
 ## Configuration
 
