@@ -1,72 +1,76 @@
-# Polymarket Trading Bot
+# Polymarket Arbitrage Trade Bot (TypeScript)
 
-A TypeScript trading bot for Polymarket cryptocurrency prediction markets.
+A TypeScript bot that trades on [Polymarket](https://polymarket.com) **binary crypto markets** (e.g. “Bitcoin up or down in the next 15 minutes”). It connects to Polymarket’s CLOB and real-time data, subscribes to a market by coin and period, and can run configurable strategies.
+
+## What kind of bot is this?
+
+**Not classic arbitrage.** The codebase supports two styles of logic:
+
+1. **Trend-following (`trade_1` in `decision.ts`)**  
+   Detects short-term “trend” from order-book price changes and would buy the **UP** or **DOWN** token when the market is trending that way, within a configurable price range. This is **directional trading**, not arbitrage.
+
+2. **Binary “arbitrage” (`trade_1` in `ws_clob.ts`)**  
+   When real-time price velocity exceeds a threshold, it computes prices such that UP + DOWN &lt; 1 − `min_arb_price_difference`, and would buy **both** UP and DOWN to lock in a margin. That’s **binary market arbitrage** (buying both sides when they’re cheap relative to $1).  
+
+**Current state:** Order placement for both strategies is **commented out**. The bot runs as a **framework**: it connects, subscribes to markets and RTDS, updates prices, and logs signals; it does not send live orders unless you uncomment and enable the trade calls.
 
 ## Features
 
-- 🔍 Market discovery based on coin (BTC, ETH, SOL, XRP) and timeframes (15min, 1hr, 4hr, 24hr)
-- 📊 Real-time order book and price data
-- 🎯 Market filtering and selection
-- 📈 Trading infrastructure (ready for strategy implementation)
+- **Market selection**: Coin (`btc`, `eth`, `sol`, `xrp`) and period (15, 60, 240, 1440 minutes).
+- **Live data**: CLOB WebSocket (order book) and RTDS (e.g. BTCUSDT / Chainlink) for price velocity.
+- **Strategies**: `trade_1` (trend-following + binary arb logic), `trade_2` (placeholder).
+- **Config**: TOML config (`trade.toml`) for strategy, market, trading range, thresholds, simulation.
+- **Simulation**: Optional `simulation = true` to skip sending orders.
 
----
+## Requirements
 
-### From Developer
-
-Please note that Polymarket has regional restrictions. 
-
-If you need support or have any questions, feel free to reach out via Telegram: 📞 [vvizardev](https://t.me/vvizardev)
-
-## Configuration
-
-Edit `src/index.ts` to configure your market:
-
-```typescript
-const marketConfig: MarketConfig = {
-  coin: "btc", // btc / eth / sol / xrp
-  minutes: 60, // 15 / 60 / 240 / 1440
-};
-```
+- **Node.js** ≥ 20.6.0
+- **Wallet**: Polymarket proxy wallet and signer (private key) for the CLOB.
 
 ## Setup
 
-1. Install dependencies:
-```bash
-npm install
-```
+1. **Clone and install**
 
-2. (Optional) Set up environment variables:
-```bash
-cp .env.example .env
-# Edit .env and add your POLYMARKET_PRIVATE_KEY if you want to trade
-```
+   ```bash
+   git clone https://github.com/vvizardev/polymarket-arbitrage-bot.git
+   cd polymarket-arbitrage-bot
+   npm install
+   ```
 
-3. Run the bot:
-```bash
-npm run dev
-```
+2. **Environment**
 
-## Trading
+   Create a `.env` in the project root (see `.gitignore`; do not commit secrets):
 
-The bot currently discovers and displays market information. To enable actual trading:
+   - `POLYMARKET_PRIVATE_KEY` – EOA private key that signs for the proxy wallet.
+   - `PROXY_WALLET_ADDRESS` – Proxy wallet address used with Polymarket CLOB.
 
-1. Add your private key to `.env` as `POLYMARKET_PRIVATE_KEY`
-2. Implement your trading strategy in `src/trading-bot.ts`
-3. The bot will use the Polymarket CLOB client to place orders
+3. **Config**
 
-## Project Structure
+   Edit `trade.toml`:
 
-- `src/index.ts` - Main entry point with configuration
-- `src/trading-bot.ts` - Trading bot logic and market discovery
-- `src/polymarket-client.ts` - Polymarket API client wrapper
-- `src/types.ts` - TypeScript type definitions
-- `src/config.ts` - Configuration utilities
+   - `strategy`: `"trade_1"` or `"trade_2"`.
+   - `trade_usd`, `max_retries`, `simulation`.
+   - `[market]`: `market_coin`, `market_period`.
+   - `[trade_1]`: `trading_range`, `price_change_threshold`, `min_arb_price_difference`, etc.
 
-## API Documentation
+## Scripts
 
-- [Polymarket Developer Docs](https://docs.polymarket.com/)
-- [CLOB Client SDK](https://www.npmjs.com/package/@polymarket/clob-client)
+| Command   | Description                          |
+|----------|--------------------------------------|
+| `npm run dev`   | Run bot: `tsx src/index.ts`          |
+| `npm run log`   | Run and log stdout/stderr to `log.txt` |
+| `npm run check` | Run inspector: `tsx src/inspect.ts`  |
+| `npm run build` | Compile: `tsc`                       |
+| `npm start`     | Run compiled: `node dist/index.js`   |
+
+## Project layout
+
+- `src/index.ts` – Entry: load config, create CLOB client, resolve market slug, connect WebSockets, instantiate `Trade`, main loop.
+- `src/config/` – Env, TOML config, market/slug helpers.
+- `src/services/` – CLOB client, Gamma API, WebSockets (CLOB + RTDS).
+- `src/trade/` – `Trade` class: decision logic, prices/trending, order placement (buy/sell UP/DOWN).
+- `trade.toml` – Strategy and market configuration.
 
 ## Disclaimer
 
-This bot is for educational purposes. Always test thoroughly before using real funds. Trading involves risk.
+This bot is for education and experimentation. Trading on Polymarket involves financial risk. Only use funds you can afford to lose and ensure you comply with Polymarket’s terms and applicable laws.
