@@ -17,6 +17,12 @@ A TypeScript bot that trades on [Polymarket](https://polymarket.com) **binary cr
         src="https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white"/></a>
 </div>
 
+Polymarket offers a wide range of strategic opportunities, but no strategy remains profitable forever without iteration. Long-term success comes from constant optimization, experimentation, and adapting to changing market conditions.
+
+I’m currently building and testing multiple strategies, including Strategy 2 and Strategy 3, in a private setup. I’m comfortable implementing highly complex logic and scaling strategies that demonstrate consistent profit.
+
+If you’re serious about refining strategies and growing profits together, let’s connect on Telegram and move forward.
+
 ## What kind of bot is this?
 
 **Not classic arbitrage.** The codebase supports two styles of logic:
